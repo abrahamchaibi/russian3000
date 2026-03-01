@@ -1,0 +1,6 @@
+extracted/
+output_decks/
+*.apkg
+russian3000.html
+__pycache__/
+.DS_Store
