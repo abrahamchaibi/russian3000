@@ -12,6 +12,7 @@ var sessionStats = { correct: 0, wrong: 0 };
 var answered = false;
 var autoAdvanceTimer = null;
 var cardHistory = []; // stores { choices, correctAnswer, selectedAnswer, isCorrect } per index
+var isReviewSession = false;
 
 function getProgress() {
   try { return JSON.parse(localStorage.getItem('ru3k_progress') || '{}'); }
@@ -48,7 +49,8 @@ function saveSession() {
     idx: currentIdx,
     mistakes: mistakes,
     stats: sessionStats,
-    history: cardHistory
+    history: cardHistory,
+    review: isReviewSession
   };
   localStorage.setItem('ru3k_session', JSON.stringify(session));
 }
@@ -214,6 +216,7 @@ function resumeSession() {
   mistakes = session.mistakes;
   sessionStats = session.stats;
   cardHistory = session.history || [];
+  isReviewSession = session.review || false;
 
   var words = getDeckWords(currentDeck);
   var first = words[0].r, last = words[words.length - 1].r;
@@ -301,6 +304,7 @@ function startStudy(deckIdx, restart) {
   mistakes = [];
   sessionStats = { correct: 0, wrong: 0 };
   cardHistory = [];
+  isReviewSession = false;
 
   var first = words[0].r, last = words[words.length - 1].r;
   document.getElementById('studyTitle').textContent = 'Words ' + first + '\u2013' + last;
@@ -537,7 +541,7 @@ function showDone() {
 
   var total = sessionStats.correct + sessionStats.wrong;
   var pct = total > 0 ? Math.round(sessionStats.correct / total * 100) : 0;
-  saveBestScore(currentDeck, pct);
+  if (!isReviewSession) saveBestScore(currentDeck, pct);
 
   var prevBest = getDeckBestScore(currentDeck);
   var scoreText = sessionStats.correct + '/' + total + ' correct (' + pct + '%)';
@@ -621,6 +625,7 @@ document.getElementById('reviewMistakes').addEventListener('click', function() {
   mistakes = [];
   sessionStats = { correct: 0, wrong: 0 };
   cardHistory = [];
+  isReviewSession = true;
   showScreen('studyScreen');
   renderQuestion();
   saveSession();
